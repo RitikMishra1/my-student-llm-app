@@ -8,7 +8,6 @@ npm (v6.x or later)
 Setup Instructions
 
 Frontend
-Unzip the project folder.
 Navigate to the project directory in your terminal.
 Run npm install to install the required packages.
 Run npm start to start the frontend development server.
