@@ -3,16 +3,6 @@ StudentLLMApp
 Overview
 StudentLLMApp is an educational platform designed to empower students with AI and AR tools. This repository contains both the frontend and backend code for the application.
 
-Contents
-src/ - Frontend source code
-App.js - Main React application
-FeaturedProduct.js - Featured products component
-backend-api/ - Backend API code
-node_modules/ - Node.js modules
-package.json - Project metadata and dependencies
-package-lock.json - Exact dependency tree
-public/ - Public assets
-README.md - This file
 
 Prerequisites
 Node.js (v14.x or later)
