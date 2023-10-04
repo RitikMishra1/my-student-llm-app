@@ -1,217 +1,131 @@
 // Import required modules
-// Express for the web server, CORS for cross-origin requests, and UUID for generating unique IDs.
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose');
+const rateLimit = require('express-rate-limit');
 const { v4: uuidv4 } = require('uuid');
 
-// Create an Express application
-// Initialize the Express app and set the port number.
+// Initialize Express app and set port
 const app = express();
 const port = 3001;
 
-// Middleware for enabling Cross-Origin Resource Sharing (CORS)
-// Enable CORS and JSON parsing for incoming requests.
+// Apply middleware
 app.use(cors());
 app.use(express.json());
 
-// Sample product data
-// This is the mock database containing product and review information.
+// Configure rate limiting
+const rateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+});
+app.use(rateLimiter);
 
-const products = [
-  {
-    id: '1',
-    name: 'AI Math Solver',
-    icon: 'https://via.placeholder.com/50',
-    reviews: [
-      { id: '1', rating: 4, comment: 'Great for solving equations!' },
-      { id: '2', rating: 5, comment: 'Helped me understand calculus better.' }
-    ],
-  },
-  {
-    id: '2',
-    name: 'AI Science Lab',
-    icon: 'https://via.placeholder.com/50',
-    reviews: [
-      { id: '3', rating: 3, comment: 'Good for basic science topics.' },
-      { id: '4', rating: 4, comment: 'Loved the interactive experiments.' }
-    ],
-  },
-  {
-    id: '3',
-    name: 'History Explorer',
-    icon: 'https://via.placeholder.com/50',
-    reviews: [
-      { id: '5', rating: 5, comment: 'Made history come alive!' },
-      { id: '6', rating: 4, comment: 'Great timelines and maps.' }
-    ],
-  },
-  {
-    id: '4',
-    name: 'AI Language Tutor',
-    icon: 'https://via.placeholder.com/50',
-    reviews: [
-      { id: '7', rating: 5, comment: 'Improved my vocabulary!' },
-      { id: '8', rating: 4, comment: 'Helpful for learning new languages.' }
-    ],
-  },
-  {
-    id: '5',
-    name: 'Code Helper',
-    icon: 'https://via.placeholder.com/50',
-    reviews: [
-      { id: '9', rating: 4, comment: 'Debugging made easy.' },
-      { id: '10', rating: 5, comment: 'Great for learning algorithms.' }
-    ],
-  },
-  {
-    id: '6',
-    name: 'AI Music Teacher',
-    icon: 'https://via.placeholder.com/50',
-    reviews: [
-      { id: '11', rating: 5, comment: 'Learned to play the guitar!' },
-      { id: '12', rating: 4, comment: 'Helpful for understanding music theory.' }
-    ],
-  },
-  {
-    id: '7',
-    name: 'Fitness Coach',
-    icon: 'https://via.placeholder.com/50',
-    reviews: [
-      { id: '13', rating: 4, comment: 'Keeps me active.' },
-      { id: '14', rating: 5, comment: 'Love the personalized workout plans.' }
-    ],
-  },
-  {
-    id: '8',
-    name: 'AI Art Instructor',
-    icon: 'https://via.placeholder.com/50',
-    reviews: [
-      { id: '15', rating: 5, comment: 'Improved my drawing skills.' },
-      { id: '16', rating: 4, comment: 'Great for learning digital art.' }
-    ],
-  },
-  {
-    id: '9',
-    name: 'Mental Health Buddy',
-    icon: 'https://via.placeholder.com/50',
-    reviews: [
-      { id: '17', rating: 5, comment: 'Helps me relax.' },
-      { id: '18', rating: 4, comment: 'Good for stress management.' }
-    ],
-  },
-  {
-    id: '10',
-    name: 'AI Debate Coach',
-    icon: 'https://via.placeholder.com/50',
-    reviews: [
-      { id: '19', rating: 5, comment: 'Enhanced my public speaking.' },
-      { id: '20', rating: 4, comment: 'Helpful for forming arguments.' }
-    ],
+// Connect to MongoDB
+mongoose.connect('mongodb://localhost:27017/yourDatabaseName', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => {
+  console.log('Connected to MongoDB');
+  populateDB();  // Call the function to populate the database
+})
+.catch(err => console.error('Failed to connect to MongoDB:', err));
+
+// Define Mongoose schemas and models
+const ReviewSchema = new mongoose.Schema({
+  id: { type: String, unique: true },
+  rating: { type: Number, min: 1, max: 5 },
+  comment: String,
+});
+
+const ProductSchema = new mongoose.Schema({
+  id: { type: String, unique: true },
+  name: String,
+  icon: String,
+  description: String,
+  reviews: [ReviewSchema],
+});
+
+const ProductModel = mongoose.model('Product', ProductSchema);
+
+// Function to populate MongoDB with sample data
+const populateDB = async () => {
+  const count = await ProductModel.countDocuments({});
+  if (count === 0) {
+
+  const sampleProducts = [
+    { id: uuidv4(), name: 'Assignment Helper', icon: 'Assignment Helper.png', description: 'Automates the process of managing and scheduling your assignments.', reviews: sampleReviews },
+    { id: uuidv4(), name: 'Note Organizer', icon: 'Note Organizer.png', description: 'Keeps your notes organized and easily searchable.', reviews: sampleReviews },
+    { id: uuidv4(), name: 'Time Tracker', icon: 'Time Tracker.png', description: 'Helps you manage your time effectively with study and break intervals.', reviews: sampleReviews },
+    { id: uuidv4(), name: 'Flashcard Maker', icon: 'Flashcard Maker.png', description: 'Create digital flashcards for quick and effective study sessions.', reviews: sampleReviews },
+    { id: uuidv4(), name: 'Essay Editor', icon: 'Essay Editor.png', description: 'Provides real-time grammar and style checks for your essays.', reviews: sampleReviews },
+    { id: uuidv4(), name: 'Math Solver', icon: 'Math Solver.png', description: 'Solves complex math problems and explains the solutions step-by-step.', reviews: sampleReviews },
+    { id: uuidv4(), name: 'Code Compiler', icon: 'Code Compiler.png', description: 'Compile and run code in multiple languages with built-in debugging.', reviews: sampleReviews },
+    { id: uuidv4(), name: 'Reading Assistant', icon: 'Reading Assistant.png', description: 'Enhances your reading experience with summaries and vocabulary assistance.', reviews: sampleReviews },
+    { id: uuidv4(), name: 'Science Lab', icon: 'Science Lab.png', description: 'Virtual science experiments with real-time data analysis.', reviews: sampleReviews },
+    { id: uuidv4(), name: 'Language Tutor', icon: 'Language Tutor.png', description: 'Personalized language learning with real-time feedback.', reviews: sampleReviews },
+    { id: uuidv4(), name: 'History Timeline', icon: 'History Timeline.png', description: 'Interactive timelines for learning historical events.', reviews: sampleReviews },
+    { id: uuidv4(), name: 'Music Tutor', icon: 'Music Tutor.png', description: 'Learn music theory and practice instruments virtually.', reviews: sampleReviews },
+    { id: uuidv4(), name: 'Art Studio', icon: 'Art Studio.png', description: 'Digital art creation with various tools and templates.', reviews: sampleReviews },
+    { id: uuidv4(), name: 'Fitness Coach', icon: 'Fitness Coach.png', description: 'Personalized workout plans and real-time posture correction.', reviews: sampleReviews },
+    { id: uuidv4(), name: 'Mental Health', icon: 'Mental Health.png', description: 'Mindfulness and stress-relief exercises for mental well-being.', reviews: sampleReviews }
+  ];
+
+  for (const product of sampleProducts) {
+    const newProduct = new ProductModel(product);  // Changed from 'new Product'
+    await newProduct.save();
   }
-];
+
+  console.log('Sample products added to MongoDB');
+}
+};
 
 
+// API routes
+app.get('/api/products', async (req, res, next) => {
+  try {
+    const allProducts = await ProductModel.find({});
+    res.json(allProducts);
+  } catch (err) {
+    console.error('Error retrieving products:', err);
+    next(err);  // Added this line
+  }
+});
 
-// Define API routes and their functionality
-
-  // Fetch all products
-  // GET endpoint to fetch all products from the mock database.
-
-  app.get('/api/products', (req, res) => {
-    res.json(products);
-  });
-
-  // Fetch individual product by ID
-    // GET endpoint to fetch a specific product by its ID.
-
-  app.get('/api/products/:id', (req, res) => {
-    const product = products.find(p => p.id === req.params.id);
-    if (product) {
-      res.json(product);
+app.get('/api/products/:productId', async (req, res, next) => {
+  try {
+    const { productId } = req.params;
+    const foundProduct = await ProductModel.findOne({ id: productId });
+    if (foundProduct) {
+      res.json(foundProduct);
     } else {
       res.status(404).json({ message: 'Product not found' });
     }
-  });
+  } catch (err) {
+    console.error('Error:', err);
+    next(err);  // Added this line
+  }
+});
 
-  // Add a new product
-  // POST endpoint to add a new product to the mock database.
+// API routes for Products
+app.get('/api/products', async (req, res, next) => {
+  try {
+    const allProducts = await ProductModel.find({});
+    res.json(allProducts);
+  } catch (err) {
+    console.error('Error retrieving products:', err);
+    next(err);
+  }
+});
 
-  app.post('/api/products', (req, res) => {
-    const newProduct = {
-      id: uuidv4(),
-      name: req.body.name,
-      icon: req.body.icon,
-      reviews: []
-    };
-    products.push(newProduct);
-    res.status(201).json(newProduct);
-  });
 
-  // Update a product by ID
-  // PUT endpoint to update an existing product by its ID.
+// Asynchronous Error Handling Middleware
+app.use(async (err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
+});
 
-  app.put('/api/products/:id', (req, res) => {
-    const product = products.find(p => p.id === req.params.id);
-    if (product) {
-      product.name = req.body.name || product.name;
-      product.icon = req.body.icon || product.icon;
-      res.json(product);
-    } else {
-      res.status(404).json({ message: 'Product not found' });
-    }
-  });
-
-  // Delete a product by ID
-  // DELETE endpoint to remove a product by its ID.
-
-  app.delete('/api/products/:id', (req, res) => {
-    const index = products.findIndex(p => p.id === req.params.id);
-    if (index !== -1) {
-      products.splice(index, 1);
-      res.status(204).end();
-    } else {
-      res.status(404).json({ message: 'Product not found' });
-    }
-  });
-
-  // Add a review to a product
-  // POST endpoint to add a review to a specific product.
-
-  app.post('/api/products/:id/reviews', (req, res) => {
-    const product = products.find(p => p.id === req.params.id);
-    if (product) {
-      const newReview = {
-        id: uuidv4(),
-        rating: req.body.rating,
-        comment: req.body.comment
-      };
-      product.reviews.push(newReview);
-      res.status(201).json(newReview);
-    } else {
-      res.status(404).json({ message: 'Product not found' });
-    }
-  });
-
-  // Fetch all reviews
-  // GET endpoint to fetch all reviews across all products.
-
-  app.get('/api/reviews', (req, res) => {
-    // Flatten product reviews and add product names
-    const allReviews = products.flatMap(product => product.reviews.map(review => ({...review, product: product.name})));
-    res.json(allReviews);
-  });
-
-  // Basic error handling middleware
-  // Middleware to handle errors and send a 500 status code.
-
-  app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send('Something broke!');
-  });
-
-  // Start the Express server
-  // Start the server and log the URL where it can be accessed.
-
-  app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}/`);
-  });
+// Start Server
+app.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}/`);
+});

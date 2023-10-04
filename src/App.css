@@ -1,5 +1,24 @@
-/* App.css */
 .App {
   text-align: center;
   padding: 20px;
+  background: linear-gradient(to bottom, #f0f0f0, #d4d4d4);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+body {
+  background: linear-gradient(to right, #ffffff, #f3f3f3);
+  color: #333;
+}
+
+.Container {
+  background: linear-gradient(to bottom, #ffffff, #e6e6e6);
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.Footer {
+  background: linear-gradient(to top, #2c3e50, #34495e);
+  color: #ecf0f1;
+  padding: 20px;
+  text-align: center;
 }
