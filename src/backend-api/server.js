@@ -4,6 +4,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const rateLimit = require('express-rate-limit');
 const { v4: uuidv4 } = require('uuid');
+const path = require('path'); // Import the 'path' module
 
 // Initialize Express app and set port
 const app = express();
@@ -13,6 +14,9 @@ const port = 3001;
 app.use(cors());
 app.use(express.json());
 
+// Serve static files from the 'public' folder
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Configure rate limiting
 const rateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -21,15 +25,16 @@ const rateLimiter = rateLimit({
 app.use(rateLimiter);
 
 // Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/yourDatabaseName', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => {
-  console.log('Connected to MongoDB');
-  populateDB();  // Call the function to populate the database
-})
-.catch(err => console.error('Failed to connect to MongoDB:', err));
+mongoose
+  .connect('mongodb://localhost:27017/yourDatabaseName', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => {
+    console.log('Connected to MongoDB');
+    populateDB(); // Call the function to populate the database
+  })
+  .catch((err) => console.error('Failed to connect to MongoDB:', err));
 
 // Define Mongoose schemas and models
 const ReviewSchema = new mongoose.Schema({
@@ -52,8 +57,7 @@ const ProductModel = mongoose.model('Product', ProductSchema);
 const populateDB = async () => {
   const count = await ProductModel.countDocuments({});
   if (count === 0) {
-
-  const sampleProducts = [
+    const sampleProducts = [
     { id: uuidv4(), name: 'Assignment Helper', icon: 'Assignment Helper.png', description: 'Automates the process of managing and scheduling your assignments.', reviews: sampleReviews },
     { id: uuidv4(), name: 'Note Organizer', icon: 'Note Organizer.png', description: 'Keeps your notes organized and easily searchable.', reviews: sampleReviews },
     { id: uuidv4(), name: 'Time Tracker', icon: 'Time Tracker.png', description: 'Helps you manage your time effectively with study and break intervals.', reviews: sampleReviews },
@@ -72,7 +76,7 @@ const populateDB = async () => {
   ];
 
   for (const product of sampleProducts) {
-    const newProduct = new ProductModel(product);  // Changed from 'new Product'
+    const newProduct = new ProductModel(product);
     await newProduct.save();
   }
 
@@ -80,52 +84,39 @@ const populateDB = async () => {
 }
 };
 
-
 // API routes
 app.get('/api/products', async (req, res, next) => {
-  try {
-    const allProducts = await ProductModel.find({});
-    res.json(allProducts);
-  } catch (err) {
-    console.error('Error retrieving products:', err);
-    next(err);  // Added this line
-  }
+try {
+  const allProducts = await ProductModel.find({});
+  res.json(allProducts);
+} catch (err) {
+  console.error('Error retrieving products:', err);
+  next(err);
+}
 });
 
 app.get('/api/products/:productId', async (req, res, next) => {
-  try {
-    const { productId } = req.params;
-    const foundProduct = await ProductModel.findOne({ id: productId });
-    if (foundProduct) {
-      res.json(foundProduct);
-    } else {
-      res.status(404).json({ message: 'Product not found' });
-    }
-  } catch (err) {
-    console.error('Error:', err);
-    next(err);  // Added this line
+try {
+  const { productId } = req.params;
+  const foundProduct = await ProductModel.findOne({ id: productId });
+  if (foundProduct) {
+    res.json(foundProduct);
+  } else {
+    res.status(404).json({ message: 'Product not found' });
   }
+} catch (err) {
+  console.error('Error:', err);
+  next(err);
+}
 });
-
-// API routes for Products
-app.get('/api/products', async (req, res, next) => {
-  try {
-    const allProducts = await ProductModel.find({});
-    res.json(allProducts);
-  } catch (err) {
-    console.error('Error retrieving products:', err);
-    next(err);
-  }
-});
-
 
 // Asynchronous Error Handling Middleware
 app.use(async (err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Something broke!');
+console.error(err.stack);
+res.status(500).send('Something broke!');
 });
 
 // Start Server
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}/`);
+console.log(`Server running at http://localhost:${port}/`);
 });
